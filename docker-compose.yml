@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  SHINtube:
+  shintube:
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -23,7 +23,7 @@ services:
         max-size: "3m"
         max-file: "1"
   
-  LTIdb:
+  ltidb:
     image: mongo
     volumes:
       - ./LTIdb:/data/db

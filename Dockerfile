@@ -12,4 +12,6 @@ RUN git clone https://github.com/kuropengin/SHINtube.git
 
 WORKDIR /SHINtube
 
-CMD ["npm start"] 
+RUN npm install
+
+CMD ["npm","start"] 
