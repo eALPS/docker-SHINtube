@@ -17,7 +17,7 @@ services:
       BACK_DOMAIN: http://backendweb:8000
       REG_KEY: #Secret key for dynamic registration
     depends_on:
-      - "LTIdb"
+      - "ltidb"
     logging:
       driver: "json-file"
       options:
