@@ -43,8 +43,8 @@ services:
     environment:
       - apiserver=apiserver
       - TZ=Asia/Tokyo
-      - BASIC_USER=user
-      - BASIC_PASS=pass
+      # - BASIC_USER=user
+      # - BASIC_PASS=pass
     volumes:
       - videodata:/var/www/html/video
       - filedata:/var/www/html/file
