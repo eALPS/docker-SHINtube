@@ -1,5 +1,6 @@
 version: '3.8'
 services:
+  # フロントエンド
   shintube:
     build:
       context: .
@@ -13,7 +14,7 @@ services:
       DB_USER: #LTIdb-MONGO_INITDB_ROOT_USERNAME
       DB_PASS: #LTIdb-MONGO_INITDB_ROOT_PASSWORD
       MY_DOMAIN: #Deployment destination url
-      BACK_DOMAIN: #url where video-api is installed
+      BACK_DOMAIN: http://backendweb:8000
       REG_KEY: #Secret key for dynamic registration
     depends_on:
       - "LTIdb"
@@ -27,8 +28,73 @@ services:
     image: mongo
     volumes:
       - ./LTIdb:/data/db
+    restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: #LTIdb-MONGO_INITDB_ROOT_USERNAME
       MONGO_INITDB_ROOT_PASSWORD: #LTIdb-MONGO_INITDB_ROOT_PASSWORD
       MONGO_INITDB_DATABASE: auth
+  # バックエンド
+  backendweb:
+    image: nginx
+
+    restart: always
+    # ports:
+    #      - 8000:80
+    environment:
+      - apiserver=apiserver
+      - TZ=Asia/Tokyo
+      - BASIC_USER=user
+      - BASIC_PASS=pass
+    volumes:
+      - videodata:/var/www/html/video
+      - filedata:/var/www/html/file
+      - $PWD/video-api/nginx/templates:/etc/nginx/templates
+      - $PWD/video-api/nginx/basic.sh:/docker-entrypoint.d/basic.sh
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "3m"
+        max-file: "1"
+  
+  apiserver:
+    build:
+      context: .
+      dockerfile: ./video-api/docker/nvenc-api/Dockerfile
+    restart: always
+    environment:
+      - TZ=Asia/Tokyo
+    volumes:
+      - videodata:/videoapi/video
+      - filedata:/videoapi/file
+      - $PWD/video-api:/videoapi
+
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/dri/renderD128:/dev/dri/renderD128
+      - /dev/dri/card0:/dev/dri/card0
       
+    command: /bin/sh -c  "cd videoapi &&./start.sh "
+    logging:
+     driver: "json-file"
+     options:
+       max-size: "1m"
+       max-file: "1"
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - capabilities: [utility, compute, video]
+
+volumes:
+  videodata:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '$PWD/video'
+  filedata:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '$PWD/file'
