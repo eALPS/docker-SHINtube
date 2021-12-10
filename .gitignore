@@ -1,2 +1,5 @@
 log/*.gz
 log/*.log
+LTIdb/*
+!LTIdb/.gitkeep
+config/*.json
