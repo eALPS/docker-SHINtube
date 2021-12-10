@@ -1,12 +1,20 @@
 version: '3.8'
 services:
   # フロントエンド
+  nginx:
+    image: nginx
+    restart: always
+    ports:
+      - 3000:80
+    environment:
+      - TZ=Asia/Tokyo
+    volumes:
+      - $PWD/nginx/templates:/etc/nginx/templates
+      
   shintube:
     build:
       context: .
       dockerfile: ./Dockerfile
-    ports:
-      - 3000:3000
     restart: always
     environment:
       DB_URL: LTIdb
