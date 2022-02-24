@@ -16,6 +16,8 @@ services:
       context: .
       dockerfile: ./Dockerfile
     restart: always
+    deploy:
+      replicas: 3
     environment:
       DB_URL: LTIdb
       DB_NAME: SHINtube
@@ -31,6 +33,8 @@ services:
       options:
         max-size: "3m"
         max-file: "1"
+    volumes:
+      - $PWD/config:/SHINtube/config
   
   ltidb:
     image: mongo
