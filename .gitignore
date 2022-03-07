@@ -1,6 +1,6 @@
-log/*.gz
-log/*.log
 LTIdb/*
 !LTIdb/.gitkeep
 config/*.json
 docker-compose.yml
+logs/**/*.log
+logs/**/*.gz
