@@ -8,6 +8,8 @@ services:
       - 3000:80
     environment:
       - TZ=Asia/Tokyo
+      - SSO_PROXY_IP_SOURCE_HEADER=X-Real-IP
+      - SSO_PROXY_IP=160.252.0.0/16
     volumes:
       - $PWD/nginx/templates:/etc/nginx/templates
       
@@ -18,23 +20,10 @@ services:
     restart: always
     deploy:
       replicas: 3
-    environment:
-      DB_URL: LTIdb
-      DB_NAME: SHINtube
-      DB_USER: #LTIdb-MONGO_INITDB_ROOT_USERNAME
-      DB_PASS: #LTIdb-MONGO_INITDB_ROOT_PASSWORD
-      MY_DOMAIN: #Deployment destination url
-      BACK_DOMAIN: http://backendweb:8000
-      REG_KEY: #Secret key for dynamic registration
-    depends_on:
-      - "ltidb"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "3m"
-        max-file: "1"
     volumes:
       - $PWD/config:/SHINtube/config
+    depends_on:
+      - "ltidb"
   
   ltidb:
     image: mongo
@@ -45,6 +34,17 @@ services:
       MONGO_INITDB_ROOT_USERNAME: #LTIdb-MONGO_INITDB_ROOT_USERNAME
       MONGO_INITDB_ROOT_PASSWORD: #LTIdb-MONGO_INITDB_ROOT_PASSWORD
       MONGO_INITDB_DATABASE: auth
+  
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: LTIdb
+      ME_CONFIG_MONGODB_ADMINUSERNAME: #LTIdb-MONGO_INITDB_ROOT_USERNAME
+      ME_CONFIG_MONGODB_ADMINPASSWORD: #LTIdb-MONGO_INITDB_ROOT_PASSWORD
+  
   # バックエンド
   backendweb:
     image: nginx
