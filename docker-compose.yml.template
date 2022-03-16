@@ -16,7 +16,7 @@ services:
   shintube:
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./docker/Dockerfile
     restart: always
     deploy:
       replicas: 3
