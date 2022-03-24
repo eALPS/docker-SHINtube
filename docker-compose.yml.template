@@ -21,6 +21,7 @@ services:
     deploy:
       replicas: 3
     volumes:
+      - $PWD/logs:/SHINtube/logs
       - $PWD/config:/SHINtube/config
       - $PWD/alert/alert.ejs:/SHINtube/views/common/alert.ejs
     depends_on:
