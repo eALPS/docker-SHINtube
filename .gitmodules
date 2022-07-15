@@ -1,4 +1,3 @@
 [submodule "video-api"]
 	path = video-api
-	url = https://github.com/penM000/SHINtube-video-api.git
-	branch = main
+	url = git@github.com:eALPS/SHINtube-video-api.git
