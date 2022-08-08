@@ -1,0 +1,109 @@
+version: '3.8'
+services:
+  # フロントエンド
+  nginx:
+    image: nginx
+    restart: always
+    ports:
+      - 3000:80
+    environment:
+      - TZ=Asia/Tokyo
+      - SSO_PROXY_IP_SOURCE_HEADER=X-Real-IP
+      - SSO_PROXY_IP=160.252.0.0/16
+    volumes:
+      - $PWD/nginx/templates:/etc/nginx/templates
+      
+  shintube:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    restart: always
+    deploy:
+      replicas: 3
+    volumes:
+      - $PWD/logs:/SHINtube/logs
+      - $PWD/config:/SHINtube/config
+      - $PWD/alert/alert.ejs:/SHINtube/views/common/alert.ejs
+    depends_on:
+      - "ltidb"
+  
+  ltidb:
+    image: mongo
+    volumes:
+      - ./LTIdb:/data/db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: #LTIdb-MONGO_INITDB_ROOT_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: #LTIdb-MONGO_INITDB_ROOT_PASSWORD
+      MONGO_INITDB_DATABASE: auth
+  
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: LTIdb
+      ME_CONFIG_MONGODB_ADMINUSERNAME: #LTIdb-MONGO_INITDB_ROOT_USERNAME
+      ME_CONFIG_MONGODB_ADMINPASSWORD: #LTIdb-MONGO_INITDB_ROOT_PASSWORD
+  
+  # バックエンド
+  backendweb:
+    image: nginx
+
+    restart: always
+    # ports:
+    #      - 8000:80
+    environment:
+      - apiserver=apiserver
+      - TZ=Asia/Tokyo
+      # - BASIC_USER=user
+      # - BASIC_PASS=pass
+    volumes:
+      - videodata:/var/www/html/video
+      - filedata:/var/www/html/file
+      - $PWD/video-api/nginx/templates:/etc/nginx/templates
+      - $PWD/video-api/nginx/basic.sh:/docker-entrypoint.d/basic.sh
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "3m"
+        max-file: "1"
+  
+  apiserver:
+    build:
+      context: .
+      dockerfile: ./video-api/docker/general-api/Dockerfile
+    restart: always
+    environment:
+      - TZ=Asia/Tokyo
+    volumes:
+      - videodata:/videoapi/video
+      - filedata:/videoapi/file
+      - $PWD/video-api:/videoapi
+
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/dri/renderD128:/dev/dri/renderD128
+      - /dev/dri/card0:/dev/dri/card0
+      
+    command: /bin/sh -c  "cd videoapi &&./start.sh "
+    logging:
+     driver: "json-file"
+     options:
+       max-size: "1m"
+       max-file: "1"
+
+volumes:
+  videodata:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '$PWD/video'
+  filedata:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '$PWD/file'
