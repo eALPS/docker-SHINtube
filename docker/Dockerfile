@@ -8,7 +8,7 @@ RUN apk --update add tzdata && \
 
 RUN apk add git
 
-RUN git clone https://github.com/eALPS/SHINtube.git
+RUN git clone -b ver_2 https://github.com/eALPS/SHINtube.git
 
 WORKDIR /SHINtube
 
